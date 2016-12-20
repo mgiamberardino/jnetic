@@ -2,7 +2,6 @@ package com.mgiamberardino.jnetic.population;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -12,6 +11,16 @@ public class Population<T, U> {
 
 	private List<T> members;
 	private Function<T, U> aptitudeFunction;
+	
+	public static class Parents<T> {
+		public T first;
+		public T second;
+		
+		public Parents(T first, T second){
+			this.first = first;
+			this.second = second;
+		}
+	}
 	
 	public static <T, U> Population<T, U> of(List<T> members, Function<T, U> aptitudeFunction) {
 		return new Population<T, U>(members);
@@ -25,7 +34,7 @@ public class Population<T, U> {
 	}
 	
 	public static <T, U> Population<T, U> of(Population<T, U> population) {
-		return new Population<T, U>(population.members()).aptitudeFunction(population.aptitudeFunction());
+		return new Population<T, U>(population.members());
 	}
 		
 	Population(List<T> members){
@@ -40,44 +49,10 @@ public class Population<T, U> {
 		return members.stream();
 	}
 
-	public void evolve(Integer iterations) {
-		
-	}
-
-	public U calculateFitness(Function<Stream<U>, U> fitnessFunction, Function<T, U> aptitudeFunction) {
-		if (null == aptitudeFunction){
-			throw new IllegalArgumentException("Aptitude function can't be null.");
-		}
-		if (null == fitnessFunction){
-			throw new IllegalArgumentException("Fitness function can't be null.");
-		}
-		return fitnessFunction.apply(
-					members.stream()
-					  	   .map(aptitudeFunction));
-	}
-	
-	public U calculateFitness(Function<Stream<U>, U> fitnessFunction) {
-		if (null == aptitudeFunction){
-			throw new IllegalStateException("You need to define the aptitude function to run this method.");
-		}
-		return fitnessFunction.apply(
-					members.stream()
-					  	   .map(aptitudeFunction));
-	}
-
 	public Evolution<T, U> evolution() {
 		return new Evolution<T, U>(this);
 	}
-
-	public Population<T,U> aptitudeFunction(Function<T, U> aptitudeFunction) {
-		this.aptitudeFunction = aptitudeFunction;
-		return this;
-	}
-
-	public Function<T,U> aptitudeFunction() {
-		return aptitudeFunction;
-	}
-
+	
 	private List<T> members() {
 		return members;
 	}

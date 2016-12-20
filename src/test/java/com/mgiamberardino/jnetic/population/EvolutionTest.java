@@ -3,31 +3,28 @@ package com.mgiamberardino.jnetic.population;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
+import com.mgiamberardino.jnetic.operators.Selector;
+import com.mgiamberardino.jnetic.population.Population.Parents;
+
 public class EvolutionTest {
-	private static BiFunction<Integer, Integer, List<Integer>> CROSSER = (i1, i2) -> Arrays.asList(i1, i2);
-	private static Function<List<Integer>, List<Integer>> SELECTOR = (list) -> new ArrayList<>(list); 
+	private static Function<Parents<Integer>, List<Integer>> CROSSER = (parents) -> Arrays.asList(parents.first, parents.second);
+	private static Selector<Integer, Integer> SELECTOR = (list, function, size) -> list.collect(Collectors.toList()); 
 	private static Function<Integer, Integer> MUTATOR = (i1) -> i1; 
 	
 	@Test
 	public void testEvolutionCreation() {
 		Evolution<Integer, Integer> ev = Evolution.of(Population.of(IntStream.range(0,10).boxed().collect(Collectors.toList()),Function.identity()));
 		assertNotNull(ev);
-	}
-	
-	@Test
-	public void testEvolutionEvolve(){
-		Evolution<Integer, Integer> ev = Evolution.of(Population.of(IntStream.range(0,10).boxed().collect(Collectors.toList()),Function.identity()));
-		assertNotNull(ev.evolve());
 	}
 	
 	@Test
@@ -52,16 +49,25 @@ public class EvolutionTest {
 	}
 	
 	@Test
-	public void testSetFunctions(){
-		Evolution<Integer, Integer> ev = Evolution.of(
-										Population.of(
-											IntStream.range(0,10)
-												.boxed()
-												.collect(Collectors.toList())
-												,Function.identity()))
-									.crosser(CROSSER)
-									.selector(SELECTOR)
-									.mutator(MUTATOR);
+	public void testEvolve(){
+		Evolution.of(
+				Population.of(
+					IntStream.range(0,10)
+						.boxed()
+						.peek(System.out::println)
+						.collect(Collectors.toList())
+						,Function.identity()))
+			.crosser(CROSSER)
+			.selector(EvolutionTest::select)
+			.mutator(MUTATOR);
+			//.evolveUntil((pop, apt, fit) -> );
+	}
+	
+	private static List<Integer> select(Stream<Integer> members, Function<Integer, Integer> aptitudeFunction, int size){
+		return members
+			.sorted((i1, i2) -> (aptitudeFunction.apply(i1) - aptitudeFunction.apply(i2)))
+			.limit(size)
+			.collect(Collectors.toList());
 	}
 
 }
