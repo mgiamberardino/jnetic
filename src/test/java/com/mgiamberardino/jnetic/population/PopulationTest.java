@@ -30,25 +30,25 @@ public class PopulationTest{
 	
 	@Test
 	public void testCreateEmptyPopulation() {
-		Population<Integer, Integer> pop = Population.of(new ArrayList<Integer>(), Function.identity());
+		Population<Integer> pop = Population.of(new ArrayList<Integer>());
 		assertEquals(Integer.valueOf(0), pop.size());
 	}
 	
 	@Test
 	public void testCreatePopulationWithSomeMembers() {
-		Population<Integer, Integer> pop = Population.of(IntStream.of(1, 2, 3, 4).boxed().collect(Collectors.toList()), Function.identity());
+		Population<Integer> pop = Population.of(IntStream.of(1, 2, 3, 4).boxed().collect(Collectors.toList()));
 		assertEquals(Integer.valueOf(4), pop.size());
 	}
 	
 	@Test
 	public void testPopulationGenerator() {
-		Population<Integer, Integer> pop = Population.generate(() -> new Integer(0), 10);
+		Population<Integer> pop = Population.generate(() -> new Integer(0), 10);
 		assertEquals(Integer.valueOf(10), pop.size());
 	}
 	
 	@Test
 	public void testPopulationGenerateIndivuals() {
-		Population<ArrayList<Integer>, Integer> pop = Population.generate(PopulationTest::individualGenerator, 10);
+		Population<ArrayList<Integer>> pop = Population.generate(PopulationTest::individualGenerator, 10);
 		assertEquals(Integer.valueOf(10), pop.size());
 		if (! pop.stream().allMatch(i -> null != i)){
 			fail();
@@ -57,7 +57,7 @@ public class PopulationTest{
 
 	@Test
 	public void testEvolutionFromPopulation(){
-		Evolution<Integer, Integer> ev = Population.of(IntStream.range(0,10).boxed().collect(Collectors.toList()), Function.identity()).evolution();
+		Evolution<Integer, Integer> ev = Population.of(IntStream.range(0,10).boxed().collect(Collectors.toList())).evolution(Function.identity());
 		assertNotNull(ev);
 	}
 
