@@ -1,7 +1,6 @@
 package com.mgiamberardino.jnetic.population;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -10,6 +9,7 @@ import org.apache.commons.lang3.RandomUtils;
 
 import com.mgiamberardino.jnetic.population.Population.Parents;
 import com.mgiamberardino.jnetic.util.Conditions;
+import com.mgiamberardino.jnetic.util.Selectors;
 
 public class ToBeOrNotToBe {
 
@@ -20,11 +20,12 @@ public class ToBeOrNotToBe {
 			Evolution.of(
 					Population.generate(ToBeOrNotToBe::generatePhrase, 10),
 					ToBeOrNotToBe::aptitudeMeter)
-				.selector(ToBeOrNotToBe::select)
+				.selector(Selectors.truncatedSelection(0.50))
 				.crosser(ToBeOrNotToBe::crosser)
 				.mutator(ToBeOrNotToBe::mutator)
-				.evolveUntil(ToBeOrNotToBe::stopCondition)
-				.evolveUntil(Conditions.after(1500))
+				.evolveUntil(
+						Conditions.contains(SEARCHED_STRING)
+							.or(Conditions.after(150000)))
 				.best()
 		);
 	}
@@ -37,8 +38,8 @@ public class ToBeOrNotToBe {
 		return RandomStringUtils.random(size,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ !;':.,");
 	}
 	
-	private static Integer aptitudeMeter(String phrase){
-		return SEARCHED_STRING.length() - compareByPosition(SEARCHED_STRING, phrase);
+	private static Double aptitudeMeter(String phrase){
+		return new Integer(SEARCHED_STRING.length() - compareByPosition(SEARCHED_STRING, phrase)).doubleValue();
 	}
 	
 	private static int compareByPosition(String s1, String s2){
@@ -53,19 +54,6 @@ public class ToBeOrNotToBe {
 		}
 		return counter;
 	}
-
-	private static List<String> select(Population<String> population, Function<String, Integer> aptitudeFunction){
-		Integer sum = population.stream()
-								.map(aptitudeFunction)
-								.mapToInt(Integer::intValue)
-								.sum();
-		Integer floor = sum / population.size();
-		List<String> result = population.stream()
-			.filter(ph -> aptitudeFunction.apply(ph) >= floor)
-			.collect(Collectors.toList());
-		result.sort((s1, s2) -> aptitudeFunction.apply(s2).compareTo(aptitudeFunction.apply(s1)));
-		return result.stream().limit(population.size() / 4 * 3).collect(Collectors.toList());
-	}
 	
 	private static List<String> crosser(Parents<String> parents){
 		Integer splitIndex = parents.first.length() / 2;
@@ -79,7 +67,4 @@ public class ToBeOrNotToBe {
 		return phrase.substring(0, index) + generateChars(1) + phrase.substring(index+1, phrase.length());
 	}
 	
-	private static Boolean stopCondition(Population<String> population, Function<String, Integer> aptitudeFunction){
-		return population.stream().anyMatch(SEARCHED_STRING::equals);
-	}
 }

@@ -2,6 +2,7 @@ package com.mgiamberardino.jnetic.population;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -16,7 +17,7 @@ import com.mgiamberardino.jnetic.operators.Condition;
 import com.mgiamberardino.jnetic.operators.Selector;
 import com.mgiamberardino.jnetic.population.Population.Parents;
 
-public class Evolution<T, U extends Comparable> {
+public class Evolution<T, U extends Comparable<U>> {
 
 	private Population<T> population;
 	private Function<Parents<T>, List<T>> crosser;
@@ -26,7 +27,7 @@ public class Evolution<T, U extends Comparable> {
 	private Function<Map<T,U>, Supplier<Parents<T>>> parentSupplierBuilder = Evolution::defaultSupplier;
 	private Predicate<T> validator = o -> true;
 	
-	public static <T, U extends Comparable> Evolution<T, U> of(Population<T> population, Function<T, U> aptitudeFunction) {
+	public static <T, U extends Comparable<U>> Evolution<T, U> of(Population<T> population, Function<T, U> aptitudeFunction) {
 		return new Evolution<T, U>(population, aptitudeFunction);
 	}
 	
@@ -51,9 +52,9 @@ public class Evolution<T, U extends Comparable> {
 		return this;
 	}
 
-	public Evolution<T, U> evolveUntil(Condition<T, U> condition){
+	public Evolution<T, U> evolveUntil(Condition<T> condition){
 		Integer i = 0;
-		while(! condition.apply(population, aptitudeFunction)){
+		while(! condition.apply(population)){
 			evolve();
 			System.out.println("Generacion " + i + ":");
 			System.out.println(population.stream().collect(Collectors.toList()));

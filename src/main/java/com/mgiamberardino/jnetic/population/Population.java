@@ -1,6 +1,7 @@
 package com.mgiamberardino.jnetic.population;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -42,6 +43,10 @@ public class Population<T> {
 	public static <T, U> Population<T> of(Population<T> population) {
 		return new Population<T>(population.members(), population.generation + 1);
 	}
+	
+	public static <T,U extends Comparable<U>> Comparator<T> comparator(Function<T, U> aptitudeFunction){
+		return (o1, o2) -> aptitudeFunction.apply(o1).compareTo(aptitudeFunction.apply(o2));
+	}
 
 	Population(List<T> members, int generation){
 		this.generation = generation;
@@ -56,7 +61,7 @@ public class Population<T> {
 		return members.stream();
 	}
 
-	public <U extends Comparable> Evolution<T, U> evolution(Function<T, U> aptitudeFunction) {
+	public <U extends Comparable<U>> Evolution<T, U> evolution(Function<T, U> aptitudeFunction) {
 		return new Evolution<T, U>(this, aptitudeFunction);
 	}
 
@@ -67,5 +72,6 @@ public class Population<T> {
 	public int getGeneration() {
 		return generation;
 	}
+	
 
 }
