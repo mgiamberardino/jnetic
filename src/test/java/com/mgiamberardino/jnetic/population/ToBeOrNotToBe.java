@@ -8,9 +8,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
-import com.mgiamberardino.jnetic.population.Evolution;
-import com.mgiamberardino.jnetic.population.Population;
 import com.mgiamberardino.jnetic.population.Population.Parents;
+import com.mgiamberardino.jnetic.util.Conditions;
 
 public class ToBeOrNotToBe {
 
@@ -25,6 +24,7 @@ public class ToBeOrNotToBe {
 				.crosser(ToBeOrNotToBe::crosser)
 				.mutator(ToBeOrNotToBe::mutator)
 				.evolveUntil(ToBeOrNotToBe::stopCondition)
+				.evolveUntil(Conditions.after(1500))
 				.best()
 		);
 	}

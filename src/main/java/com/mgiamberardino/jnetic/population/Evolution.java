@@ -5,12 +5,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.mgiamberardino.jnetic.operators.Condition;
 import com.mgiamberardino.jnetic.operators.Selector;
 import com.mgiamberardino.jnetic.population.Population.Parents;
 
@@ -45,13 +47,13 @@ public class Evolution<T, U extends Comparable> {
 			     .limit(population.size() - parents.size())
 			     .collect(Collectors.toList());
 		parents.addAll(sons);
-		population = new Population<>(parents);
+		population = new Population<>(parents, population.getGeneration()+1);
 		return this;
 	}
 
-	public Evolution<T, U> evolveUntil(BiFunction<Population<T>, Function<T, U>, Boolean> stopCondition){
+	public Evolution<T, U> evolveUntil(Condition<T, U> condition){
 		Integer i = 0;
-		while(! stopCondition.apply(population, aptitudeFunction)){
+		while(! condition.apply(population, aptitudeFunction)){
 			evolve();
 			System.out.println("Generacion " + i + ":");
 			System.out.println(population.stream().collect(Collectors.toList()));

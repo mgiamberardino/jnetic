@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 public class Population<T> {
 
 	private List<T> members;
+	private int generation;
 
 	public static class Parents<T> {
 		public T first;
@@ -22,21 +23,28 @@ public class Population<T> {
 	}
 
 	public static <T> Population<T> of(List<T> members) {
-		return new Population<T>(members);
+		return new Population<T>(members, 0);
 	}
 
 	public static <T> Population<T> generate(Supplier<T> generator, Integer size) {
 		return new Population<T>(
 				Stream.generate(generator)
 					  .limit(size)
-					  .collect(Collectors.toList()));
+					  .collect(Collectors.toList()), 0);
 	}
-
+	
+	/**
+	 * This method assumes that is evolving and the new population will have
+	 * its generation number increased.
+	 * @param population
+	 * @return new population with the generation number increased
+	 */
 	public static <T, U> Population<T> of(Population<T> population) {
-		return new Population<T>(population.members());
+		return new Population<T>(population.members(), population.generation + 1);
 	}
 
-	Population(List<T> members){
+	Population(List<T> members, int generation){
+		this.generation = generation;
 		this.members = new ArrayList<T>(members);
 	}
 
@@ -54,6 +62,10 @@ public class Population<T> {
 
 	private List<T> members() {
 		return members;
+	}
+
+	public int getGeneration() {
+		return generation;
 	}
 
 }
