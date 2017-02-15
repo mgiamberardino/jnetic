@@ -61,8 +61,8 @@ public class Population<T> {
 		return members.stream();
 	}
 
-	public <U extends Comparable<U>> Evolution<T, U> evolution(Function<T, U> aptitudeFunction) {
-		return new Evolution<T, U>(this, aptitudeFunction);
+	public <U extends Comparable<U>> Evolution<T, U> evolution(Function<T, U> aptitudeFunction, double elitePortion) {
+		return new Evolution<T, U>(this, aptitudeFunction, elitePortion);
 	}
 
 	private List<T> members() {

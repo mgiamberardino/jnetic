@@ -1,7 +1,9 @@
 package com.mgiamberardino.jnetic.population;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -14,13 +16,16 @@ import com.mgiamberardino.jnetic.util.Selectors;
 public class ToBeOrNotToBe {
 
 	private static final String SEARCHED_STRING = "To be or not to be";
+	private static interface A {
+		
+	}
 	
 	public static void main(String[] args) {
 		System.out.println(
 			Evolution.of(
-					Population.generate(ToBeOrNotToBe::generatePhrase, 10),
-					ToBeOrNotToBe::aptitudeMeter)
-				.selector(Selectors.truncatedSelection(0.50))
+					Population.generate(ToBeOrNotToBe::generatePhrase, 200),
+					ToBeOrNotToBe::aptitudeMeter,
+					0.005)
 				.crosser(ToBeOrNotToBe::crosser)
 				.mutator(ToBeOrNotToBe::mutator)
 				.evolveUntil(

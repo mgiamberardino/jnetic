@@ -9,6 +9,6 @@ import com.mgiamberardino.jnetic.population.Population;
 @FunctionalInterface
 public interface Selector<T,U extends Comparable<U>> {
 
-	public List<T> select(Population<T> population, Function<T, U> aptitudeFunction);
+	public List<T> select(Population<T> population, Function<T, U> aptitudeFunction, Double elitePortion);
 	
 }

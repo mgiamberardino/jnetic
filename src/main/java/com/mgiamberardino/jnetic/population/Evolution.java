@@ -2,20 +2,17 @@ package com.mgiamberardino.jnetic.population;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.mgiamberardino.jnetic.operators.Condition;
 import com.mgiamberardino.jnetic.operators.Selector;
 import com.mgiamberardino.jnetic.population.Population.Parents;
+import com.mgiamberardino.jnetic.util.Selectors;
 
 public class Evolution<T, U extends Comparable<U>> {
 
@@ -26,18 +23,21 @@ public class Evolution<T, U extends Comparable<U>> {
 	private Function<T, U> aptitudeFunction;
 	private Function<Map<T,U>, Supplier<Parents<T>>> parentSupplierBuilder = Evolution::defaultSupplier;
 	private Predicate<T> validator = o -> true;
+	private Double elitePortion;
 	
-	public static <T, U extends Comparable<U>> Evolution<T, U> of(Population<T> population, Function<T, U> aptitudeFunction) {
-		return new Evolution<T, U>(population, aptitudeFunction);
+	public static <T, U extends Comparable<U>> Evolution<T, U> of(Population<T> population, Function<T, U> aptitudeFunction, double elitePortion) {
+		return new Evolution<T, U>(population, aptitudeFunction,elitePortion);
 	}
 	
-	Evolution(Population<T> population, Function<T, U> aptitudeFunction){
+	Evolution(Population<T> population, Function<T, U> aptitudeFunction, Double elitePortion){
 		this.population = population;
 		this.aptitudeFunction = aptitudeFunction;
+		this.elitePortion = elitePortion;
+		this.selector = Selectors.binaryTournament(this ,0.25, 0.75);
 	}
 	
 	public Evolution<T,U> evolve() {
-		List<T> parents = selector.select(population, aptitudeFunction);
+		List<T> parents = selector.select(population, aptitudeFunction, elitePortion);
 		Map<T,U> aptitudes = parents.stream()
 			.collect(Collectors.toMap(Function.identity(), aptitudeFunction, (s1, s2) -> s1));
 		List<T> sons =	Stream.generate(parentSupplierBuilder.apply(aptitudes))
@@ -52,9 +52,9 @@ public class Evolution<T, U extends Comparable<U>> {
 		return this;
 	}
 
-	public Evolution<T, U> evolveUntil(Condition<T> condition){
+	public Evolution<T, U> evolveUntil(Predicate<Population<T>> condition){
 		Integer i = 0;
-		while(! condition.apply(population)){
+		while(! condition.test(population)){
 			evolve();
 			System.out.println("Generacion " + i + ":");
 			System.out.println(population.stream().collect(Collectors.toList()));
