@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.mgiamberardino.jnetic.Individual;
+import com.mgiamberardino.jnetic.operators.Operators;
 import com.mgiamberardino.jnetic.operators.Selector;
 import com.mgiamberardino.jnetic.population.Population.Parents;
 import com.mgiamberardino.jnetic.util.Selectors;
@@ -23,17 +25,24 @@ public class Evolution<T, U extends Comparable<U>> {
 	private Function<T, U> aptitudeFunction;
 	private Function<Map<T,U>, Supplier<Parents<T>>> parentSupplierBuilder = Evolution::defaultSupplier;
 	private Predicate<T> validator = o -> true;
+	
 	private Double elitePortion;
 	
 	public static <T, U extends Comparable<U>> Evolution<T, U> of(Population<T> population, Function<T, U> aptitudeFunction, double elitePortion) {
 		return new Evolution<T, U>(population, aptitudeFunction,elitePortion);
 	}
 	
+	public static <T extends Individual<R>, R> Evolution<T, Double> create(Individual.Factory<T, R> factory, int populationSize, double elitePortion) {
+		return new Evolution<T, Double>(Population.generate(factory::buildRandom, populationSize), i -> i.getAptitude(), elitePortion)
+					.operators(Operators.factory(factory))
+					.validator(i -> i.isValid());
+	}
+	
 	Evolution(Population<T> population, Function<T, U> aptitudeFunction, Double elitePortion){
 		this.population = population;
 		this.aptitudeFunction = aptitudeFunction;
 		this.elitePortion = elitePortion;
-		this.selector = Selectors.binaryTournament(this ,0.25, 0.75);
+		this.selector = Selectors.binaryTournament(this ,0.5, 0.75);
 	}
 	
 	public Evolution<T,U> evolve() {
@@ -66,6 +75,12 @@ public class Evolution<T, U extends Comparable<U>> {
 	
 	public Evolution<T, U> crosser(Function<Parents<T>, List<T>> crosser) {
 		this.crosser = crosser;
+		return this;
+	}
+	
+	public <R> Evolution<T, U> operators(Operators.Factory<T, R> operators){
+		this.crosser = operators.uniformCrosserBuilder().build();
+		this.mutator = operators.basicMutatorBuilder().build();
 		return this;
 	}
 
@@ -115,6 +130,15 @@ public class Evolution<T, U extends Comparable<U>> {
 		return population.stream()
 			.reduce((t1, t2) -> aptitudeFunction.apply(t1).compareTo(aptitudeFunction.apply(t2)) >= 0 ? t1 : t2)
 			.orElse(null);
+	}
+	
+	public Predicate<T> validator() {
+		return validator;
+	}
+
+	public Evolution<T, U> validator(Predicate<T> validator) {
+		this.validator = validator;
+		return this;
 	}
 
 }

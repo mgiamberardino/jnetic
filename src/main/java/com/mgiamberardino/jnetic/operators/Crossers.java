@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
+import com.mgiamberardino.jnetic.operators.Crossers.BasicBuilder;
 import com.mgiamberardino.jnetic.population.Population.Parents;
 
 public class Crossers {
@@ -46,6 +47,7 @@ public class Crossers {
 		};
 		
 		protected abstract Function<Parents<T>, List<T>> createCrosser();
+		
 	}
 	
 	public static class OnePointCrossoverBuilder<T,U> extends BasicBuilder<T, U>{
@@ -79,7 +81,7 @@ public class Crossers {
 				List<U> firstChild = Lists.newArrayList();
 				List<U> secondChild = Lists.newArrayList();
 				Random rand = new Random(System.currentTimeMillis());
-				IntStream.range(0, Math.min(firstChild.size(), secondChild.size()))
+				IntStream.range(0, Math.min(gensFirst.size(), gensSecond.size()))
 					.forEach(pos -> {
 						Double r = rand.nextDouble();
 						firstChild.add(r >= ratio ? gensSecond.get(pos) : gensFirst.get(pos));

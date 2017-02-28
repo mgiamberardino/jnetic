@@ -16,9 +16,6 @@ import com.mgiamberardino.jnetic.util.Selectors;
 public class ToBeOrNotToBe {
 
 	private static final String SEARCHED_STRING = "To be or not to be";
-	private static interface A {
-		
-	}
 	
 	public static void main(String[] args) {
 		System.out.println(
