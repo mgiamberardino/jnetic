@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 
 import com.mgiamberardino.jnetic.Individual;
 import com.mgiamberardino.jnetic.operators.Operators;
-import com.mgiamberardino.jnetic.operators.Selector;
+import com.mgiamberardino.jnetic.operators.selectors.Selector;
+import com.mgiamberardino.jnetic.operators.selectors.SelectorFactory;
 import com.mgiamberardino.jnetic.population.Population.Parents;
-import com.mgiamberardino.jnetic.util.Selectors;
 
 public class Evolution<T, U extends Comparable<U>> {
-
+	
 	private Population<T> population;
 	private Function<Parents<T>, List<T>> crosser;
 	private Selector<T, U> selector;
@@ -42,7 +42,7 @@ public class Evolution<T, U extends Comparable<U>> {
 		this.population = population;
 		this.aptitudeFunction = aptitudeFunction;
 		this.elitePortion = elitePortion;
-		this.selector = Selectors.binaryTournament(this ,0.5, 0.75);
+		this.selector = Operators.SELECTORS.binaryTournament(this ,0.5, 0.75);
 	}
 	
 	public Evolution<T,U> evolve() {
@@ -50,12 +50,13 @@ public class Evolution<T, U extends Comparable<U>> {
 		Map<T,U> aptitudes = parents.stream()
 			.collect(Collectors.toMap(Function.identity(), aptitudeFunction, (s1, s2) -> s1));
 		List<T> sons =	Stream.generate(parentSupplierBuilder.apply(aptitudes))
-			     .map((parentsPair) -> crosser.apply(parentsPair))
-			     .flatMap(List::stream)
-			     .map(t -> mutator.apply(t))
-			     .filter(validator::test)
-			     .limit(population.size() - parents.size())
-			     .collect(Collectors.toList());
+				.parallel()
+			    .map((parentsPair) -> crosser.apply(parentsPair))
+			    .flatMap(List::stream)
+			    .map(t -> mutator.apply(t))
+			    .filter(validator::test)
+			    .limit(population.size() - parents.size())
+			    .collect(Collectors.toList());
 		parents.addAll(sons);
 		population = new Population<>(parents, population.getGeneration()+1);
 		return this;
@@ -65,8 +66,8 @@ public class Evolution<T, U extends Comparable<U>> {
 		Integer i = 0;
 		while(! condition.test(population)){
 			evolve();
-			System.out.println("Generacion " + i + ":");
-			System.out.println(population.stream().collect(Collectors.toList()));
+			//System.out.println("Generacion " + i + ":");
+			//System.out.println(population.stream().collect(Collectors.toList()));
 			i++;
 		}
 		System.out.println("Stopped at generation " + i);
@@ -79,8 +80,8 @@ public class Evolution<T, U extends Comparable<U>> {
 	}
 	
 	public <R> Evolution<T, U> operators(Operators.Factory<T, R> operators){
-		this.crosser = operators.uniformCrosserBuilder().build();
-		this.mutator = operators.basicMutatorBuilder().build();
+		this.crosser = operators.crossers().uniformCrosserBuilder();
+		this.mutator = operators.mutators().basicMutatorBuilder();
 		return this;
 	}
 
@@ -139,6 +140,10 @@ public class Evolution<T, U extends Comparable<U>> {
 	public Evolution<T, U> validator(Predicate<T> validator) {
 		this.validator = validator;
 		return this;
+	}
+	
+	public int currentGeneration(){
+		return population.getGeneration();
 	}
 
 }

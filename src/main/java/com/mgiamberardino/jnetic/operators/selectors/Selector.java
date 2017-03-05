@@ -1,4 +1,4 @@
-package com.mgiamberardino.jnetic.operators;
+package com.mgiamberardino.jnetic.operators.selectors;
 
 import java.util.List;
 import java.util.function.Function;

@@ -8,6 +8,8 @@ import com.mgiamberardino.jnetic.population.Population;
 
 public class Conditions {
 	
+	
+	
 	public static <T> Predicate<Population<T>> after(int iterations){
 		return (population) -> population.getGeneration() == iterations;
 	}
@@ -34,13 +36,14 @@ public class Conditions {
 		};
 	}
 
-	public static <T extends Individual<U>, U> Predicate<Population<T>> converge(Double difference){
+	public static <T> Predicate<Population<T>> converge(Double difference){
 		return converge(difference, Conditions::calculateAverage);
 	}
 
-	private static <T extends Individual<U>, U> Double calculateAverage(Population<T> population){
-    	return population.stream()
-    		.map(T::getAptitude)
+	private static <T, U> Double calculateAverage(Population<T> population){
+    	
+		return population.stream()
+    		.map(i -> ((Individual<U>)i).getAptitude())
     		.map(i -> i.toString())
     		.map(Double::valueOf)
     		.reduce(Double::sum)

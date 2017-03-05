@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
+import com.mgiamberardino.jnetic.operators.selectors.SelectorFactory;
 import com.mgiamberardino.jnetic.population.Population.Parents;
 import com.mgiamberardino.jnetic.util.Conditions;
-import com.mgiamberardino.jnetic.util.Selectors;
 
 public class ToBeOrNotToBe {
 
