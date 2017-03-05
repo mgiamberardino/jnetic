@@ -1,37 +1,58 @@
 package com.mgiamberardino.jnetic.population;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Population<T, U> {
+public class Population<T> {
 
 	private List<T> members;
-	private Function<T, U> aptitudeFunction;
-	
-	public static <T, U> Population<T, U> of(List<T> members, Function<T, U> aptitudeFunction) {
-		return new Population<T, U>(members);
+	private int generation;
+
+	public static class Parents<T> {
+		public T first;
+		public T second;
+		
+		public Parents(T first, T second){
+			this.first = first;
+			this.second = second;
+		}
 	}
 
-	public static <T, U> Population<T, U> generate(Supplier<T> generator, Integer size) {
-		return new Population<T, U>(
+	public static <T> Population<T> of(List<T> members) {
+		return new Population<T>(members, 0);
+	}
+
+	public static <T> Population<T> generate(Supplier<T> generator, Integer size) {
+		return new Population<T>(
 				Stream.generate(generator)
 					  .limit(size)
-					  .collect(Collectors.toList()));
+					  .collect(Collectors.toList()), 0);
 	}
 	
-	public static <T, U> Population<T, U> of(Population<T, U> population) {
-		return new Population<T, U>(population.members()).aptitudeFunction(population.aptitudeFunction());
+	/**
+	 * This method assumes that is evolving and the new population will have
+	 * its generation number increased.
+	 * @param population
+	 * @return new population with the generation number increased
+	 */
+	public static <T, U> Population<T> of(Population<T> population) {
+		return new Population<T>(population.members(), population.generation + 1);
 	}
-		
-	Population(List<T> members){
+	
+	public static <T,U extends Comparable<U>> Comparator<T> comparator(Function<T, U> aptitudeFunction){
+		return (o1, o2) -> aptitudeFunction.apply(o1).compareTo(aptitudeFunction.apply(o2));
+	}
+
+	Population(List<T> members, int generation){
+		this.generation = generation;
 		this.members = new ArrayList<T>(members);
 	}
-	
+
 	public Integer size() {
 		return members.size();
 	}
@@ -40,45 +61,17 @@ public class Population<T, U> {
 		return members.stream();
 	}
 
-	public void evolve(Integer iterations) {
-		
-	}
-
-	public U calculateFitness(Function<Stream<U>, U> fitnessFunction, Function<T, U> aptitudeFunction) {
-		if (null == aptitudeFunction){
-			throw new IllegalArgumentException("Aptitude function can't be null.");
-		}
-		if (null == fitnessFunction){
-			throw new IllegalArgumentException("Fitness function can't be null.");
-		}
-		return fitnessFunction.apply(
-					members.stream()
-					  	   .map(aptitudeFunction));
-	}
-	
-	public U calculateFitness(Function<Stream<U>, U> fitnessFunction) {
-		if (null == aptitudeFunction){
-			throw new IllegalStateException("You need to define the aptitude function to run this method.");
-		}
-		return fitnessFunction.apply(
-					members.stream()
-					  	   .map(aptitudeFunction));
-	}
-
-	public Evolution<T, U> evolution() {
-		return new Evolution<T, U>(this);
-	}
-
-	public Population<T,U> aptitudeFunction(Function<T, U> aptitudeFunction) {
-		this.aptitudeFunction = aptitudeFunction;
-		return this;
-	}
-
-	public Function<T,U> aptitudeFunction() {
-		return aptitudeFunction;
+	public <U extends Comparable<U>> Evolution<T, U> evolution(Function<T, U> aptitudeFunction, double elitePortion) {
+		return new Evolution<T, U>(this, aptitudeFunction, elitePortion);
 	}
 
 	private List<T> members() {
 		return members;
 	}
+
+	public int getGeneration() {
+		return generation;
+	}
+	
+
 }

@@ -1,2 +1,2 @@
 # jnetic
-Library for genetic algorithms
+Library for genetic algorithms.
